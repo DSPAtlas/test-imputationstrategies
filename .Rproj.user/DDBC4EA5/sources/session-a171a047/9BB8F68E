@@ -1,0 +1,27 @@
+{
+    "id": "9BB8F68E",
+    "path": "~/Documents/GitHub/test-imputationstrategies/01_datageneration.R",
+    "project_path": "01_datageneration.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1721900191469.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "66,24",
+        "scrollLine": "37"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1721908035,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1721908035,
+    "read_only": false,
+    "read_only_alternatives": []
+}
