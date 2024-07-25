@@ -22,7 +22,7 @@ ion[ion <=  10] <- NA
 ion <- ion[rowSums(is.na(ion)) == 0,]  ## 6689
 
 source("liiangjin0912-proteomics_imputation/functions_3 proteome.R")
-
+source("00_ludovicsimputation.R")
 
 # generate datasets with missing values -----------------------------------
 
@@ -49,33 +49,54 @@ names(ion_miss) <- paste0("MV_",mv,"_MNAR_",mnar,"_",idx)
 
 # run imputation and record run time --------------------------------------
 
-time.table <- data.frame(matrix(NA,nrow = 90, ncol = 7))
+time.table <- data.frame(matrix(NA,nrow = 90, ncol = 8))
 rownames(time.table) <- names(ion_miss)
-colnames(time.table) <- c("LOD","ND","kNN","LLS","RF","SVD","BPCA")
+colnames(time.table) <- c( "LUDO", "LOD","ND","kNN","LLS","RF","SVD","BPCA")
 
 
 ## ludovics method
-# ion_ludo <- list()
-# 
-# for(i in 1:90){
-#   
-#   tictoc::tic("Ludovic")
-#   tmp <- ion_miss[[i]]
-#   tmp[is.na(tmp)] <- min(tmp,na.rm = T)
-#   tmp2 <- toc()
-#   time.table$LOD[i] <- as.numeric(tmp2$toc - tmp2$tic)
-#   ion_ludo[[i]] <- tmp
-# }
-# 
+ion_ludo <- list()
+
+for(i in 1:90){
+  
+  tictoc::tic("LUDO")
+  tmp <- ion_miss[[i]]
+  
+  long_df <- tmp %>%
+    tibble::rownames_to_column( var = "pg_protein_accession") %>%
+    pivot_longer(
+      cols = -pg_protein_accession, 
+      names_to = "sample", 
+      values_to = "intensity"
+    ) %>%
+    mutate(group = substr(sample, 1, 1)) 
+  
+  imputed <- impute_ludo(long_df, group, sample, pg_protein_accession, intensity)
+  
+  wide_df <- imputed %>%
+    pivot_wider(
+      names_from = sample, 
+      values_from = intensity, 
+      id_cols = pg_protein_accession
+    ) %>%
+    column_to_rownames(var = "pg_protein_accession") 
+  
+  tmp2 <- toc()
+  time.table$LUDO[i] <- as.numeric(tmp2$toc - tmp2$tic)
+  ion_ludo[[i]] <- wide_df
+}
+  
+
 
 ## LOD
 
 ion_lod <- list()
 
 for(i in 1:90){
-  print(i)
+  #print(i)
   tictoc::tic("LOD")
   tmp <- ion_miss[[i]]
+  print(tmp)
   tmp[is.na(tmp)] <- min(tmp,na.rm = T)
   tmp2 <- toc()
   time.table$LOD[i] <- as.numeric(tmp2$toc - tmp2$tic)
@@ -187,6 +208,7 @@ for(i in 1:90){
 
 #
 save(ion,
+     ion_ludo,
      ion_lod,
      ion_nd,
      ion_knn,
