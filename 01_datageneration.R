@@ -10,7 +10,8 @@ library(pcaMethods)
 library(VIM)
 library(tictoc)  ## measure running time
 library(openxlsx)
-
+library(tidyr)
+library(tibble)
 # load data and functions -------------------------------------------------
 
 ion <- read.xlsx("liiangjin0912-proteomics_imputation/56 biological replicates_quantitative data.xlsx")
@@ -79,7 +80,7 @@ for(i in 1:90){
       values_from = intensity, 
       id_cols = pg_protein_accession
     ) %>%
-    column_to_rownames(var = "pg_protein_accession") 
+    tibble::column_to_rownames(var = "pg_protein_accession") 
   
   tmp2 <- toc()
   time.table$LUDO[i] <- as.numeric(tmp2$toc - tmp2$tic)
