@@ -54,7 +54,6 @@ time.table <- data.frame(matrix(NA,nrow = 90, ncol = 8))
 rownames(time.table) <- names(ion_miss)
 colnames(time.table) <- c( "LUDO", "LOD","ND","kNN","LLS","RF","SVD","BPCA")
 
-
 ## ludovics method
 ion_ludo <- list()
 
@@ -77,7 +76,7 @@ for(i in 1:90){
   wide_df <- imputed %>%
     pivot_wider(
       names_from = sample, 
-      values_from = intensity, 
+      values_from = normalised_intensity_imputed_log2, 
       id_cols = pg_protein_accession
     ) %>%
     tibble::column_to_rownames(var = "pg_protein_accession") 
@@ -118,41 +117,6 @@ for(i in 1:90){
 }
 
 
-## kNN, use k = 6
-
-ion_knn <- list()
-
-for(i in 1:90){
-  
-  tictoc::tic("kNN")
-  tmp <- kNN(ion_miss[[i]],k = 6)
-  tmp2 <- toc()
-  time.table$kNN[i] <- as.numeric(tmp2$toc - tmp2$tic)
-  
-  rownames(tmp) <- rownames(ion_miss[[i]])
-  ion_knn[[i]] <- tmp[,1:32]
-  
-  cat(paste("kNN completed",i,"datasets\n",collapse = " "))
-}
-
-
-## LLS
-
-ion_lls <- list()
-
-for(i in 1:90){
-  
-  tictoc::tic("LLS")
-  tmp <- llsImpute(t(ion_miss[[i]]),allVariables = T, k = 150)
-  tmp2 <- toc()
-  time.table$LLS[i] <- as.numeric(tmp2$toc - tmp2$tic)
-  
-  ion_lls[[i]] <- as.data.frame(t(tmp@completeObs))
-  
-  cat(paste("LLS completed",i,"datasets\n",collapse = " "))
-}
-
-
 ## RF
 
 ion_rf <- list()
@@ -170,41 +134,6 @@ for(i in 1:90){
 }
 
 
-## SVD, need to determine optimum nPCs!!
-
-ion_svd <- list()
-
-for(i in 1:90){
-  
-  tictoc::tic("SVD")
-  tmp <- pca(ion_miss[[i]], method="svdImpute", nPcs=2, center = TRUE)
-  tmp2 <- toc()
-  time.table$SVD[i] <- as.numeric(tmp2$toc - tmp2$tic)
-  
-  ion_svd[[i]] <- as.data.frame(completeObs(tmp))
-  
-  cat(paste("SVD completed",i,"datasets\n",collapse = " "))
-}
-
-
-## BPCA, need to determine optimum nPCs!!
-
-ion_bpca <- list()
-
-for(i in 1:90){
-  
-  tictoc::tic("BPCA")
-  tmp <- pca(ion_miss[[i]], method="bpca", nPcs=2)
-  tmp2 <- toc()
-  time.table$BPCA[i] <- as.numeric(tmp2$toc - tmp2$tic)
-  
-  ion_bpca[[i]] <- as.data.frame(completeObs(tmp))
-  
-  cat(paste("BPCA completed",i,"datasets\n",collapse = " "))
-}
-
-
-
 # save datasets -----------------------------------------------------------
 
 #
@@ -212,11 +141,8 @@ save(ion,
      ion_ludo,
      ion_lod,
      ion_nd,
-     ion_knn,
-     ion_bpca,
-     ion_svd,
      ion_rf,
-     ion_lls,time.table, file = "data/imputation_data_files.RData")
+   time.table, file = "data/imputation_data_files.RData")
 
 
 
